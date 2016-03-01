@@ -116,6 +116,18 @@ public:
 		return buffer[1];
 #endif
 	}
+
+	static void transferBulk(uint8_t*/*[in,out]*/ data, size_t length) {
+#ifdef ARDUINO
+		SPI.beginTransaction(SPISettings(F_SCK, BIT_ORDER, MODE));
+		digitalWrite(PIN_SS, LOW);
+		for (size_t i = 0; i < length; i++) {
+			data[i] = SPI.transfer(data[i]);
+		}
+		digitalWrite(PIN_SS, HIGH);
+		SPI.endTransaction();
+#endif
+	}
 };
 
 #endif // SPI_DEVICE_H
