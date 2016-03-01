@@ -27,6 +27,7 @@ THE SOFTWARE.
 #define SPI_DEVICE_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef ARDUINO
 #include <Arduino.h>
@@ -126,6 +127,18 @@ public:
 		}
 		digitalWrite(PIN_SS, HIGH);
 		SPI.endTransaction();
+#else
+		if (BIT_ORDER == SpiBitOrderLsbFirst) {
+                        for (size_t i = 0; i < length; i++) {
+				data[i] = SpiDevice_reverseBits(data[i]);
+			}
+                }
+		wiringPiSPIDataRW(PIN_SS, data, length);
+                if (BIT_ORDER == SpiBitOrderLsbFirst) {
+                        for (size_t i = 0; i < length; i++) {
+                                data[i] = SpiDevice_reverseBits(data[i]);
+                        }
+                }
 #endif
 	}
 };
