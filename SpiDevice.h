@@ -93,6 +93,28 @@ public:
 #endif
 	}
 
+	static uint8_t transfer(uint8_t data) {
+#ifdef ARDUINO
+		SPI.beginTransaction(SPISettings(F_SCK, BIT_ORDER, MODE));
+		digitalWrite(PIN_SS, LOW);
+		uint8_t in = SPI.transfer(data);
+		digitalWrite(PIN_SS, HIGH);
+		SPI.endTransaction();
+		return in;
+#else
+		if (BIT_ORDER == SpiBitOrderLsbFirst) {
+			data = SpiDevice_reverseBits(data);
+		}
+		if (wiringPiSPIDataRW(PIN_SS, &data, sizeof(uint8_t)) < 0) {
+			return 0;
+		}
+		if (BIT_ORDER == SpiBitOrderLsbFirst) {
+			return SpiDevice_reverseBits(data);
+		}
+		return data;
+#endif
+	}
+
 	static uint8_t transferRegister(uint8_t command, uint8_t value) {
 #ifdef ARDUINO
 		SPI.beginTransaction(SPISettings(F_SCK, BIT_ORDER, MODE));
